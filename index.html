@@ -1,0 +1,1278 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Constructor de Ciclo de Programa</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --bg:#F5F1E7;
+    --surface:#FFFFFF;
+    --ink:#26291F;
+    --ink-soft:#5B5A4C;
+    --forest:#2F4B3C;
+    --forest-light:#4C6B57;
+    --clay:#B5622D;
+    --clay-light:#E8B98F;
+    --khaki:#C9B896;
+    --border:#E2D9C3;
+    --ok:#3D7A4E;
+  }
+  *{box-sizing:border-box;}
+  body, .root{
+    font-family:'Inter',sans-serif;
+    color:var(--ink);
+    background:var(--bg);
+    margin:0;
+    padding:0;
+  }
+  .wrap{max-width:880px;margin:0 auto;padding:28px 20px 80px;}
+
+  /* header */
+  .hero{
+    display:flex;align-items:center;gap:16px;
+    padding-bottom:18px;margin-bottom:8px;
+    border-bottom:2px solid var(--forest);
+  }
+  .compass{flex:none;}
+  .hero h1{
+    font-family:'Fraunces',serif;font-weight:700;
+    font-size:26px;margin:0;color:var(--forest);letter-spacing:.2px;
+  }
+  .hero p{margin:2px 0 0;color:var(--ink-soft);font-size:13.5px;}
+
+  .banner{
+    background:#FBF6E9;border:1px solid var(--khaki);
+    border-radius:10px;padding:10px 14px;margin:16px 0 22px;
+    font-size:13px;color:var(--ink-soft);display:flex;gap:10px;align-items:flex-start;
+  }
+  .banner b{color:var(--ink);}
+
+  /* trail nav */
+  .trail{
+    position:relative;display:flex;justify-content:space-between;
+    margin:24px 0 30px;padding:0 4px;overflow-x:auto;gap:2px;
+  }
+  .trail::before{
+    content:"";position:absolute;top:15px;left:20px;right:20px;height:2px;
+    background:repeating-linear-gradient(90deg,var(--khaki) 0 6px, transparent 6px 12px);
+    z-index:0;
+  }
+  .waypoint{
+    position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;
+    gap:6px;cursor:pointer;background:none;border:none;flex:1;min-width:64px;padding:0;
+  }
+  .dot{
+    width:30px;height:30px;border-radius:50%;background:var(--surface);
+    border:2px solid var(--khaki);display:flex;align-items:center;justify-content:center;
+    font-family:'Fraunces',serif;font-weight:600;font-size:13px;color:var(--ink-soft);
+    transition:.15s;
+  }
+  .waypoint.done .dot{background:var(--forest-light);border-color:var(--forest-light);color:#fff;}
+  .waypoint.active .dot{background:var(--clay);border-color:var(--clay);color:#fff;box-shadow:0 0 0 4px var(--clay-light);}
+  .waypoint .label{font-size:10px;text-align:center;color:var(--ink-soft);line-height:1.2;max-width:70px;}
+  .waypoint.active .label{color:var(--clay);font-weight:600;}
+
+  /* panels */
+  .panel{
+    background:var(--surface);border:1px solid var(--border);border-radius:14px;
+    padding:26px 26px 22px;display:none;
+  }
+  .panel.show{display:block;animation:fade .2s ease;}
+  @keyframes fade{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:none;}}
+
+  .panel h2{
+    font-family:'Fraunces',serif;font-size:19px;margin:0 0 4px;color:var(--forest);
+  }
+  .panel .hint{font-size:13px;color:var(--ink-soft);margin:0 0 20px;}
+
+  label{display:block;font-size:12.5px;font-weight:600;color:var(--ink-soft);margin-bottom:5px;letter-spacing:.2px;}
+  input[type=text], input[type=date], textarea{
+    width:100%;font-family:'Inter',sans-serif;font-size:14px;color:var(--ink);
+    background:#FCFAF4;border:1px solid var(--border);border-radius:8px;
+    padding:9px 11px;margin-bottom:16px;resize:vertical;
+  }
+  input:focus, textarea:focus{outline:none;border-color:var(--forest-light);background:#fff;}
+  textarea{min-height:70px;line-height:1.4;}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;}
+  @media(max-width:560px){.row,.row3{grid-template-columns:1fr;}}
+
+  .card{
+    background:#FBFAF5;border:1px solid var(--border);border-radius:10px;
+    padding:16px 16px 4px;margin-bottom:14px;position:relative;
+  }
+  .card .num{
+    position:absolute;top:-10px;left:14px;background:var(--forest);color:#fff;
+    font-size:11px;font-weight:600;padding:2px 9px;border-radius:20px;font-family:'Fraunces',serif;
+  }
+  .remove-btn{
+    position:absolute;top:10px;right:10px;background:none;border:none;color:var(--ink-soft);
+    cursor:pointer;font-size:16px;line-height:1;padding:4px;border-radius:6px;
+  }
+  .remove-btn:hover{color:var(--clay);background:#F3E3D4;}
+
+  .add-btn{
+    display:inline-flex;align-items:center;gap:6px;background:none;border:1.5px dashed var(--forest-light);
+    color:var(--forest);font-weight:600;font-size:13px;padding:9px 16px;border-radius:8px;
+    cursor:pointer;margin-top:2px;
+  }
+  .add-btn:hover{background:#EEF3EE;}
+
+  .nav-buttons{display:flex;justify-content:space-between;margin-top:22px;}
+  .btn{
+    font-family:'Inter',sans-serif;font-weight:600;font-size:13.5px;border-radius:8px;
+    padding:10px 18px;cursor:pointer;border:none;
+  }
+  .btn-ghost{background:none;border:1.5px solid var(--border);color:var(--ink-soft);}
+  .btn-ghost:hover{border-color:var(--forest-light);color:var(--forest);}
+  .btn-primary{background:var(--forest);color:#fff;}
+  .btn-primary:hover{background:var(--forest-light);}
+  .btn-primary:disabled{opacity:.4;cursor:default;}
+
+  /* footer / status */
+  .statusbar{
+    position:sticky;bottom:0;margin-top:26px;background:var(--surface);
+    border:1px solid var(--border);border-radius:12px;padding:14px 18px;
+    display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
+    box-shadow:0 6px 18px rgba(38,41,31,.06);
+  }
+  .save-status{font-size:12.5px;color:var(--ink-soft);display:flex;align-items:center;gap:7px;}
+  .save-dot{width:7px;height:7px;border-radius:50%;background:var(--ok);}
+  .save-dot.saving{background:var(--clay);animation:pulse 1s infinite;}
+  @keyframes pulse{50%{opacity:.3;}}
+
+  .import-card{
+    background:#EFF4EF;border:1px solid #C9D9CC;border-radius:12px;
+    padding:16px 18px;margin:0 0 22px;
+  }
+  .import-card h3{margin:0 0 4px;font-family:'Fraunces',serif;font-size:15px;color:var(--forest);}
+  .import-card .sub{font-size:12.5px;color:var(--ink-soft);margin:0 0 12px;}
+  .import-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+  .file-input-btn{
+    display:inline-flex;align-items:center;gap:8px;background:var(--surface);
+    border:1.5px dashed var(--forest-light);color:var(--forest);font-weight:600;font-size:13px;
+    padding:9px 16px;border-radius:8px;cursor:pointer;
+  }
+  .file-input-btn:hover{background:#EEF3EE;}
+  .import-status{font-size:12.5px;color:var(--ink-soft);}
+  .import-status.ok{color:var(--ok);font-weight:600;}
+  .import-summary{
+    margin-top:10px;font-size:12.5px;color:var(--ink);background:#fff;
+    border:1px solid var(--border);border-radius:8px;padding:10px 12px;display:none;
+  }
+  .import-summary.show{display:block;}
+  .link-btn{
+    background:none;border:none;color:var(--forest);font-weight:600;font-size:12.5px;
+    cursor:pointer;padding:0;text-decoration:underline;margin-top:8px;
+  }
+  .report-preview{
+    display:none;margin-top:12px;max-height:400px;overflow:auto;background:#fff;
+    border:1px solid var(--border);border-radius:8px;padding:16px 18px;font-size:13px;line-height:1.55;
+  }
+  .report-preview.show{display:block;}
+  .report-preview h1,.report-preview h2,.report-preview h3{font-family:'Fraunces',serif;color:var(--forest);font-size:15px;margin:14px 0 6px;}
+  .report-preview p{margin:0 0 10px;}
+  .report-preview ul,.report-preview ol{margin:0 0 10px;padding-left:22px;}
+  .report-preview strong{color:var(--ink);}
+
+  .cal-legend{display:flex;flex-wrap:wrap;gap:12px;margin:0 0 16px;font-size:12px;color:var(--ink-soft);}
+  .cal-legend-item{display:flex;align-items:center;gap:5px;}
+  .cal-legend-dot{width:10px;height:10px;border-radius:3px;display:inline-block;flex:none;}
+  .cal-add-form{
+    display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;margin-bottom:22px;
+    background:#FBFAF5;border:1px solid var(--border);border-radius:10px;padding:14px;
+  }
+  .cal-add-form > div{flex:1;min-width:20px;}
+  .cal-add-form label{margin-bottom:4px;}
+  .cal-add-form input, .cal-add-form select{margin-bottom:0;}
+  .cal-add-form button{margin-left:44px;}
+
+  @media (max-width:640px){
+    .cal-add-form{flex-direction:column;align-items:stretch;gap:12px;}
+    .cal-add-form > div{width:100%;min-width:0;}
+    .cal-add-form button{width:100%;margin-left:0;padding:12px 16px;}
+  }
+  .cal-month{margin-bottom:26px;}
+  .cal-title{font-family:'Fraunces',serif;font-size:15px;color:var(--forest);margin-bottom:8px;}
+  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;}
+  .cal-dow{font-weight:700;font-size:10.5px;text-align:center;color:var(--ink-soft);padding:2px 0 4px;}
+  .cal-day{
+    min-height:64px;border:1px solid var(--border);border-radius:6px;
+    padding:4px 4px;background:#fff;font-size:10.5px;
+  }
+  .cal-day.empty{background:#F5F3EC;border-color:transparent;}
+  .cal-daynum{font-weight:700;font-size:10.5px;color:var(--ink-soft);margin-bottom:3px;}
+  .cal-chip{
+    border-radius:4px;padding:2px 5px;margin-bottom:3px;font-size:10px;line-height:1.25;
+    color:#fff;cursor:pointer;word-break:break-word;
+  }
+  .cal-chip:hover{opacity:.82;}
+
+  ::placeholder{color:#B2AC98;}
+
+  .unit-badge{font-size:12px;color:var(--ink-soft);margin:2px 0 0;}
+  .unit-badge .link-btn{font-size:12px;margin-left:2px;}
+
+  .unit-picker{
+    background:var(--surface);border:1px solid var(--border);border-radius:14px;
+    padding:26px 26px 22px;margin:16px 0 22px;
+  }
+  .unit-picker h2{font-family:'Fraunces',serif;font-size:19px;margin:0 0 4px;color:var(--forest);}
+  .unit-picker .hint{font-size:13px;color:var(--ink-soft);margin:0 0 20px;}
+  .unit-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}
+  @media(max-width:640px){.unit-grid{grid-template-columns:repeat(2,1fr);}}
+  .unit-card{
+    display:flex;flex-direction:column;align-items:center;gap:8px;
+    background:#FBFAF5;border:1.5px solid var(--border);border-radius:12px;
+    padding:22px 12px;cursor:pointer;font-family:'Inter',sans-serif;
+  }
+  .unit-card:hover{border-color:var(--forest-light);background:#EEF3EE;}
+  .unit-icon{font-size:28px;}
+  .unit-name{font-weight:600;font-size:13.5px;color:var(--ink);text-align:center;}
+
+  .storage-warning{
+    background:#FBEAE5;border:1px solid #E3A08C;color:#8A3A22;
+    border-radius:10px;padding:12px 14px;margin:0 0 18px;font-size:13px;display:none;
+  }
+  .storage-warning.show{display:block;}
+</style>
+</head>
+<body>
+
+<div class="root">
+<div class="wrap">
+
+  <div class="hero">
+    <svg class="compass" width="40" height="40" viewBox="0 0 40 40">
+      <circle cx="20" cy="20" r="18" fill="none" stroke="#2F4B3C" stroke-width="2"/>
+      <path d="M20 8 L23 20 L20 32 L17 20 Z" fill="#B5622D"/>
+      <circle cx="20" cy="20" r="2.5" fill="#2F4B3C"/>
+    </svg>
+    <div>
+      <h1>Constructor de Ciclo de Programa</h1>
+      <p>Armado colaborativo del ciclo</p>
+      <p class="unit-badge" id="unitBadge" style="display:none;"></p>
+    </div>
+  </div>
+
+  <div class="banner">
+    <span>🧭</span>
+    <div><b>Esto lo completa todo el equipo de educadores</b>, cada uno cuando le toque — los cambios se guardan solos y se comparten con todos, aunque abran el archivo por separado (mail, WhatsApp, Drive). No hace falta terminarlo en una sola sentada: cerrá y volvé cuando quieras, va quedando lo que cargaron.</div>
+  </div>
+
+  <div class="unit-picker" id="unitPicker" style="display:none;">
+    <h2>¿Qué unidad estás armando?</h2>
+    <p class="hint">Elegí la unidad para que el formulario se adapte — por ejemplo, Manada no tiene Asambleas y usa "Seisena" en vez de "Equipos".</p>
+    <div class="unit-grid" id="unitGrid"></div>
+  </div>
+
+  <div class="storage-warning" id="storageWarning">
+    ⚠️ <b>Falta conectar el guardado compartido.</b> Buscá la línea <code>const API_URL</code> cerca del final del archivo y pegá ahí la URL de tu aplicación web de Google Apps Script (ver instrucciones que te dio Claude). Mientras tanto podés completar el formulario y generar el Word igual, pero no va a quedar guardado para el resto del equipo.
+  </div>
+
+  <div class="import-card">
+    <h3>📎 Cargar el informe del ciclo anterior (opcional)</h3>
+    <p class="sub">Subí el Word del ciclo pasado y algunos campos se completan solos — por ejemplo, los objetivos que se habían fijado para ese ciclo pasan directo a "Evaluación de objetivos del ciclo anterior" para que solo tengan que escribir cómo les fue. Nunca pisa algo que ya hayan cargado.</p>
+    <div class="import-row">
+      <label class="file-input-btn" for="reportFile">📄 Elegir archivo .docx</label>
+      <input type="file" id="reportFile" accept=".docx" style="display:none;">
+      <span class="import-status" id="importStatus"></span>
+    </div>
+    <div class="import-summary" id="importSummary"></div>
+    <button class="link-btn" id="togglePreviewBtn" style="display:none;">👁 Ver el informe completo</button>
+    <div class="report-preview" id="reportPreview"></div>
+  </div>
+
+  <div class="trail" id="trail"></div>
+
+  <div id="panels"></div>
+
+  <div class="statusbar">
+    <div class="save-status"><span class="save-dot" id="saveDot"></span><span id="saveText">Cargando…</span></div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+      <button class="btn btn-ghost" id="refreshBtn">↻ Traer cambios del equipo</button>
+      <button class="btn btn-ghost" id="newCycleBtn">🌱 Empezar ciclo nuevo</button>
+      <button class="btn btn-primary" id="exportBtn">📄 Descargar Word</button>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.11.0/mammoth.browser.min.js"></script>
+<script>
+/* ====== CONFIGURACIÓN: pegá acá la URL de tu Google Apps Script (termina en /exec) ====== */
+const API_URL = 'https://script.google.com/macros/s/AKfycbymTCINrqvAmIoseZKbeFD8lCpX9nJYDrDhxeZhr6QweAyVulgzITcf3R7im1QpMQA/exec';
+/* ========================================================================================= */
+const hasStorage = API_URL && API_URL.indexOf('https://') === 0;
+
+const emptyState = () => ({
+  unidad: '',
+  meta:{ numeroCiclo:'', NombreUnidad:'', fechaInicio:'', fechaFin:'', enfasisGrupo:'' },
+  objetivosGrupo: [],
+  diagnostico: '',
+  educadores: [],
+  evaluacionAnterior: [],
+  objetivosCiclo: [],
+  enfasisCiclo: '',
+  asambleas: [],
+  equipos: [],
+  cronograma: [],
+  sugerencias: ''
+});
+
+let state = emptyState();
+let saveTimer = null;
+
+const UNIT_CONFIG = {
+  manada:    { label:'Manada',       icon:'🐺', hideSections:['asambleas'], equiposLabel:'Seisena', equiposItemLabel:'Seisena', coordinadorLabel:'Guía de seisena' },
+  scout:     { label:'Unidad Scout', icon:'⚜️', hideSections:[],            equiposLabel:'patrullas', equiposItemLabel:'patrullas',  coordinadorLabel:'Guia y Subguia' },
+  caminante: { label:'Caminantes',   icon:'🧭', hideSections:[],            equiposLabel:'Equipos', equiposItemLabel:'Equipo',  coordinadorLabel:'Coordinador/a' },
+  rover:     { label:'Rovers',       icon:'🛶​', hideSections:['equipos'],            equiposLabel:'Equipos', equiposItemLabel:'Equipo',  coordinadorLabel:'Coordinador/a' },
+};
+function getUnitConfig(){ return UNIT_CONFIG[state.unidad] || UNIT_CONFIG.caminante; }
+
+const BASE_SECTIONS = [
+  {id:'meta', label:'Portada'},
+  {id:'objetivosGrupo', label:'Obj. de grupo'},
+  {id:'diagnostico', label:'Diagnóstico'},
+  {id:'educadores', label:'Educadores'},
+  {id:'evaluacionAnterior', label:'Ciclo anterior'},
+  {id:'objetivosCiclo', label:'Propósitos'},
+  {id:'enfasisCiclo', label:'Énfasis'},
+  {id:'asambleas', label:'Asambleas'},
+  {id:'equipos', label:'Equipos'},
+  {id:'cronograma', label:'Cronograma'},
+  {id:'sugerencias', label:'Sugerencias'}
+];
+let sections = BASE_SECTIONS.slice();
+
+function computeSections(){
+  const cfg = getUnitConfig();
+  return BASE_SECTIONS
+    .filter(s => !(cfg.hideSections||[]).includes(s.id))
+    .map(s => s.id === 'equipos' ? {...s, label:cfg.equiposLabel} : s);
+}
+function refreshSections(){
+  sections = computeSections();
+  if(current > sections.length-1) current = Math.max(0, sections.length-1);
+}
+let current = 0;
+
+function isSectionFilled(id){
+  const v = state[id];
+  if (Array.isArray(v)) return v.length>0;
+  if (typeof v === 'string') return v.trim().length>0;
+  if (typeof v === 'object' && v) return Object.values(v).some(x=>String(x||'').trim().length>0);
+  return false;
+}
+
+function renderTrail(){
+  const el = document.getElementById('trail');
+  el.innerHTML = sections.map((s,i)=>`
+    <button class="waypoint ${i===current?'active':''} ${isSectionFilled(s.id)?'done':''}" data-i="${i}">
+      <div class="dot">${isSectionFilled(s.id) && i!==current ? '✓' : i+1}</div>
+      <div class="label">${s.label}</div>
+    </button>
+  `).join('');
+  el.querySelectorAll('.waypoint').forEach(btn=>{
+    btn.onclick = ()=>{ current = parseInt(btn.dataset.i); renderAll(); };
+  });
+}
+
+function field(labelTxt, value, onInput, opts={}){
+  const id = 'f'+Math.random().toString(36).slice(2,9);
+  const tag = opts.textarea ? 'textarea' : 'input';
+  const typeAttr = opts.type ? `type="${opts.type}"` : '';
+  const el = document.createElement('div');
+  el.innerHTML = `<label for="${id}">${labelTxt}</label>
+    <${tag} id="${id}" ${typeAttr} placeholder="${opts.placeholder||''}">${opts.textarea?value||'':''}</${tag}>`;
+  const input = el.querySelector('#'+id);
+  if(!opts.textarea) input.value = value||'';
+  input.addEventListener('input', ()=>{ onInput(input.value); scheduleSave(); renderTrailSoft(); });
+  return el;
+}
+
+function renderTrailSoft(){
+  document.querySelectorAll('.waypoint').forEach((btn,i)=>{
+    btn.classList.toggle('done', isSectionFilled(sections[i].id));
+    const dot = btn.querySelector('.dot');
+    if(i!==current) dot.textContent = isSectionFilled(sections[i].id) ? '✓' : (i+1);
+  });
+}
+
+function listSection(container, arrayKey, itemLabel, fieldsConfig, defaultItem){
+  const listWrap = document.createElement('div');
+  container.appendChild(listWrap);
+
+  function redraw(){
+    listWrap.innerHTML = '';
+    state[arrayKey].forEach((item, idx)=>{
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.innerHTML = `<div class="num">${itemLabel} ${idx+1}</div><button class="remove-btn" title="Eliminar">✕</button>`;
+      const removeBtn = card.querySelector('.remove-btn');
+      removeBtn.onclick = ()=>{ state[arrayKey].splice(idx,1); redraw(); scheduleSave(); renderTrailSoft(); };
+
+      const grid = document.createElement('div');
+      const useRow = fieldsConfig.length > 1 && fieldsConfig.length <=3 && !fieldsConfig.some(f=>f.textarea);
+      grid.className = useRow ? (fieldsConfig.length===3?'row3':'row') : '';
+      fieldsConfig.forEach(fc=>{
+        const f = field(fc.label, item[fc.key], (v)=>{ item[fc.key]=v; }, fc);
+        grid.appendChild(f);
+      });
+      card.appendChild(grid);
+      listWrap.appendChild(card);
+    });
+  }
+  redraw();
+
+  const addBtn = document.createElement('button');
+  addBtn.className = 'add-btn';
+  addBtn.textContent = '+ Agregar ' + itemLabel.toLowerCase();
+  addBtn.onclick = ()=>{ state[arrayKey].push({...defaultItem}); redraw(); scheduleSave(); renderTrailSoft(); };
+  container.appendChild(addBtn);
+}
+
+/* ---------- Cronograma como calendario mensual ---------- */
+
+const CRONO_CATEGORIES = [
+  {key:'fija',     label:'Actividades fijas',            color:'#E8A33D'},
+  {key:'variable', label:'Actividades variables',        color:'#8FAE72'},
+  {key:'reunion',  label:'Reunión de equipo',             color:'#6C5B9E'},
+  {key:'grupo',    label:'Actividades de grupo',          color:'#93435F'},
+  {key:'distrito', label:'Actividades de distrito/zonal', color:'#5B8DBE'},
+];
+const MONTH_NAMES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+
+function pad2(n){ return String(n).padStart(2,'0'); }
+function isoDate(y,m,d){ return `${y}-${pad2(m+1)}-${pad2(d)}`; }
+function isValidIsoDate(s){ return /^\d{4}-\d{2}-\d{2}$/.test(s||''); }
+
+function getMonthsToShow(){
+  const months = new Set();
+  if(isValidIsoDate(state.meta.fechaInicio) && isValidIsoDate(state.meta.fechaFin)){
+    let [y,m] = state.meta.fechaInicio.split('-').map(Number);
+    const [ey,em] = state.meta.fechaFin.split('-').map(Number);
+    let guard = 0;
+    while((y < ey || (y===ey && m<=em)) && guard < 24){
+      months.add(`${y}-${pad2(m)}`);
+      m++; if(m>12){ m=1; y++; }
+      guard++;
+    }
+  }
+  state.cronograma.forEach(it=>{
+    if(isValidIsoDate(it.fecha)) months.add(it.fecha.slice(0,7));
+  });
+  return Array.from(months).sort().map(k=>{
+    const [y,m] = k.split('-').map(Number);
+    return {year:y, month:m-1};
+  });
+}
+
+function buildMonthMatrix(year, month){
+  const first = new Date(year, month, 1);
+  const startOffset = (first.getDay()+6)%7; // 0 = Lunes
+  const daysInMonth = new Date(year, month+1, 0).getDate();
+  const cells = [];
+  for(let i=0;i<startOffset;i++) cells.push(null);
+  for(let d=1; d<=daysInMonth; d++) cells.push(d);
+  while(cells.length % 7 !== 0) cells.push(null);
+  const weeks = [];
+  for(let i=0;i<cells.length;i+=7) weeks.push(cells.slice(i,i+7));
+  return weeks;
+}
+
+function renderCronogramaCalendar(panel){
+  const legend = document.createElement('div');
+  legend.className = 'cal-legend';
+  legend.innerHTML = CRONO_CATEGORIES.map(c=>
+    `<span class="cal-legend-item"><span class="cal-legend-dot" style="background:${c.color}"></span>${c.label}</span>`
+  ).join('');
+  panel.appendChild(legend);
+
+  const form = document.createElement('div');
+  form.className = 'cal-add-form';
+  form.innerHTML = `
+    <div><label>Fecha</label><input type="date" id="cronoFecha"></div>
+    <div style="flex:2;"><label>Actividad</label><input type="text" id="cronoActividad" placeholder="Ej: Consejo de la Roca"></div>
+    <div><label>Tipo</label><select id="cronoCategoria">${CRONO_CATEGORIES.map(c=>`<option value="${c.key}">${c.label}</option>`).join('')}</select></div>
+    <div><button class="btn btn-primary" type="button" id="cronoAddBtn">+ Agregar</button></div>
+  `;
+  panel.appendChild(form);
+
+  const rerender = ()=>{ renderCronogramaBody(panel); };
+
+  form.querySelector('#cronoAddBtn').onclick = ()=>{
+    const fechaEl = form.querySelector('#cronoFecha');
+    const actEl = form.querySelector('#cronoActividad');
+    const catEl = form.querySelector('#cronoCategoria');
+    if(!fechaEl.value || !actEl.value.trim()){
+      alert('Completá la fecha y la actividad.');
+      return;
+    }
+    state.cronograma.push({
+      id: 'c'+Math.random().toString(36).slice(2,9),
+      fecha: fechaEl.value,
+      actividad: actEl.value.trim(),
+      categoria: catEl.value
+    });
+    actEl.value = '';
+    scheduleSave();
+    rerenderCalendarBody();
+    renderTrailSoft();
+  };
+
+  const calWrap = document.createElement('div');
+  calWrap.id = 'calWrap';
+  panel.appendChild(calWrap);
+
+  function rerenderCalendarBody(){ renderCronogramaBody(calWrap); }
+  rerenderCalendarBody();
+}
+
+function renderCronogramaBody(calWrap){
+  calWrap.innerHTML = '';
+  const months = getMonthsToShow();
+
+  if(months.length===0){
+    const p = document.createElement('p');
+    p.className = 'hint';
+    p.textContent = 'Todavía no hay fechas: completá la fecha de inicio/fin en la Portada, o agregá una actividad arriba para que aparezca el calendario.';
+    calWrap.appendChild(p);
+  }
+
+  months.forEach(({year,month})=>{
+    const wrap = document.createElement('div');
+    wrap.className = 'cal-month';
+
+    const title = document.createElement('div');
+    title.className = 'cal-title';
+    title.textContent = `${MONTH_NAMES[month]} ${year}`;
+    wrap.appendChild(title);
+
+    const grid = document.createElement('div');
+    grid.className = 'cal-grid';
+    ['L','M','M','J','V','S','D'].forEach(d=>{
+      const dow = document.createElement('div');
+      dow.className = 'cal-dow';
+      dow.textContent = d;
+      grid.appendChild(dow);
+    });
+
+    buildMonthMatrix(year, month).forEach(week=>{
+      week.forEach(dayNum=>{
+        const cell = document.createElement('div');
+        cell.className = 'cal-day' + (dayNum ? '' : ' empty');
+        if(dayNum){
+          const iso = isoDate(year, month, dayNum);
+          const num = document.createElement('div');
+          num.className = 'cal-daynum';
+          num.textContent = dayNum;
+          cell.appendChild(num);
+          state.cronograma.filter(it=>it.fecha===iso).forEach(it=>{
+            const cat = CRONO_CATEGORIES.find(c=>c.key===it.categoria) || CRONO_CATEGORIES[1];
+            const chip = document.createElement('div');
+            chip.className = 'cal-chip';
+            chip.style.background = cat.color;
+            chip.textContent = it.actividad;
+            chip.title = 'Click para eliminar';
+            chip.onclick = ()=>{
+              if(confirm(`¿Eliminar "${it.actividad}"?`)){
+                state.cronograma = state.cronograma.filter(x=>x.id!==it.id);
+                scheduleSave();
+                renderCronogramaBody(calWrap);
+                renderTrailSoft();
+              }
+            };
+            cell.appendChild(chip);
+          });
+        }
+        grid.appendChild(cell);
+      });
+    });
+
+    wrap.appendChild(grid);
+    calWrap.appendChild(wrap);
+  });
+
+  const invalid = state.cronograma.filter(it=>!isValidIsoDate(it.fecha));
+  if(invalid.length){
+    const p = document.createElement('p');
+    p.className = 'hint';
+    p.style.marginTop = '10px';
+    p.textContent = `⚠️ ${invalid.length} actividad(es) cargada(s) antes de este cambio no tienen una fecha válida y no aparecen en el calendario. Volvé a cargarlas con el selector de fecha de arriba.`;
+    calWrap.appendChild(p);
+  }
+}
+
+function renderPanels(){
+  const wrap = document.getElementById('panels');
+  wrap.innerHTML = '';
+
+  const panel = document.createElement('div');
+  panel.className = 'panel show';
+  const s = sections[current];
+
+  if (s.id === 'meta') {
+    panel.innerHTML = `<h2>Portada del ciclo</h2><p class="hint">Los datos generales que identifican este ciclo de programa.</p>`;
+    const g1 = document.createElement('div'); g1.className='row';
+    g1.appendChild(field('N° de ciclo (ej: 1° Ciclo 2026)', state.meta.numeroCiclo, v=>state.meta.numeroCiclo=v));
+    g1.appendChild(field('Nombre de la unidad', state.meta.Nombre, v=>state.meta.Nombre=v));
+    panel.appendChild(g1);
+    const g2 = document.createElement('div'); g2.className='row';
+    g2.appendChild(field('Fecha de inicio', state.meta.fechaInicio, v=>state.meta.fechaInicio=v, {type:'date'}));
+    g2.appendChild(field('Fecha de fin', state.meta.fechaFin, v=>state.meta.fechaFin=v, {type:'date'}));
+    panel.appendChild(g2);
+    panel.appendChild(field('Énfasis del grupo (la frase/idea que guía el año)', state.meta.enfasisGrupo, v=>state.meta.enfasisGrupo=v, {textarea:true, placeholder:'El verdadero espíritu scout se nutre del aire fresco de la naturaleza...'}));
+  }
+
+  else if (s.id === 'objetivosGrupo') {
+    panel.innerHTML = `<h2>Objetivos de grupo</h2><p class="hint">Los objetivos generales del Grupo Scout para el año (no solo de esta rama).</p>`;
+    listSection(panel, 'objetivosGrupo', 'Objetivo', [{key:'texto', label:'Objetivo de grupo', textarea:true}], {texto:''});
+  }
+
+  else if (s.id === 'diagnostico') {
+    panel.innerHTML = `<h2>Diagnóstico</h2><p class="hint">Cómo está el grupo hoy: cantidad de JP, equipos, clima grupal, novedades de educadores, lo que pasó en el último acantonamiento. Se puede escribir en varios párrafos.</p>`;
+    panel.appendChild(field('Diagnóstico', state.diagnostico, v=>state.diagnostico=v, {textarea:true, placeholder:'La Comunidad está compuesta por...'}));
+    const ta = panel.querySelector('textarea'); ta.style.minHeight='220px';
+  }
+
+  else if (s.id === 'educadores') {
+    panel.innerHTML = `<h2>Educadores del ciclo</h2><p class="hint">Quiénes acompañan la rama este ciclo y su disponibilidad.</p>`;
+    listSection(panel, 'educadores', 'Educador/a', [
+      {key:'nombre', label:'Nombre'},
+      {key:'cargo', label:'Cargo (jefe/a, subjefe/a, M.A...)'},
+      {key:'nivel', label:'Nivel / disponibilidad'},
+    ], {nombre:'', cargo:'', nivel:''});
+  }
+
+  else if (s.id === 'evaluacionAnterior') {
+    panel.innerHTML = `<h2>Evaluación de objetivos del ciclo anterior</h2><p class="hint">Para cada objetivo del ciclo pasado: ¿se cumplió? ¿por qué?</p>`;
+    listSection(panel, 'evaluacionAnterior', 'Objetivo evaluado', [
+      {key:'objetivo', label:'Objetivo del ciclo anterior', textarea:true},
+      {key:'evaluacion', label:'Evaluación (se cumplió / no, y por qué)', textarea:true},
+    ], {objetivo:'', evaluacion:''});
+  }
+
+  else if (s.id === 'objetivosCiclo') {
+    panel.innerHTML = `<h2>Propósitos para este ciclo</h2><p class="hint">Cada Propósito con su/s prioridad/es educativas asociadas.</p>`;
+    listSection(panel, 'objetivosCiclo', 'Propósito', [
+      {key:'objetivo', label:'Propósito', textarea:true},
+      {key:'prioridades', label:'Prioridades educativas'},
+    ], {objetivo:'', prioridades:''});
+  }
+
+  else if (s.id === 'enfasisCiclo') {
+    panel.innerHTML = `<h2>Énfasis del ciclo</h2><p class="hint">La frase corta que resume el espíritu de estos meses.</p>`;
+    panel.appendChild(field('Énfasis', state.enfasisCiclo, v=>state.enfasisCiclo=v, {textarea:true, placeholder:'"Si asumimos cada desafío con mayor autonomía..."'}));
+  }
+
+  else if (s.id === 'asambleas') {
+    panel.innerHTML = `<h2>Asambleas</h2><p class="hint">Una entrada por cada asamblea que se haga durante el ciclo: fecha, quiénes participaron, qué se trató y la síntesis.</p>`;
+    listSection(panel, 'asambleas', 'Asamblea', [
+      {key:'titulo', label:'Título (ej: 1ª Asamblea de la comunidad)'},
+      {key:'fecha', label:'Fecha', type:'date'},
+      {key:'participantes', label:'Participantes', textarea:true},
+      {key:'temas', label:'Temas tratados', textarea:true},
+      {key:'sintesis', label:'Síntesis / acuerdos', textarea:true},
+    ], {titulo:'', fecha:'', participantes:'', temas:'', sintesis:''});
+  }
+
+  else if (s.id === 'equipos') {
+    const cfg = getUnitConfig();
+    panel.innerHTML = `<h2>${cfg.equiposLabel}</h2><p class="hint">Cómo quedaron formados y quién coordina cada uno/a.</p>`;
+    listSection(panel, 'equipos', cfg.equiposItemLabel, [
+      {key:'nombre', label:`Nombre de ${cfg.equiposItemLabel.toLowerCase()}`},
+      {key:'coordinador', label:cfg.coordinadorLabel},
+      {key:'integrantes', label:'Integrantes', textarea:true},
+    ], {nombre:'', coordinador:'', integrantes:''});
+  }
+
+  else if (s.id === 'cronograma') {
+    panel.innerHTML = `<h2>Cronograma</h2><p class="hint">Cargá cada actividad con su fecha y tipo — se arma solo como calendario, mes por mes, igual que en el informe impreso.</p>`;
+    renderCronogramaCalendar(panel);
+  }
+
+  else if (s.id === 'sugerencias') {
+    panel.innerHTML = `<h2>Sugerencias y observaciones</h2><p class="hint">Comentarios sobre las actividades u objetivos, dudas para el equipo de rama o para quien revise el programa.</p>`;
+    panel.appendChild(field('Sugerencias', state.sugerencias, v=>state.sugerencias=v, {textarea:true}));
+    const ta = panel.querySelector('textarea'); ta.style.minHeight='160px';
+  }
+
+  const nav = document.createElement('div');
+  nav.className = 'nav-buttons';
+  nav.innerHTML = `
+    <button class="btn btn-ghost" id="prevBtn" ${current===0?'disabled':''}>← Anterior</button>
+    <button class="btn btn-primary" id="nextBtn" ${current===sections.length-1?'disabled':''}>Siguiente →</button>
+  `;
+  panel.appendChild(nav);
+  wrap.appendChild(panel);
+
+  panel.querySelector('#prevBtn')?.addEventListener('click', ()=>{ if(current>0){current--; renderAll();} });
+  panel.querySelector('#nextBtn')?.addEventListener('click', ()=>{ if(current<sections.length-1){current++; renderAll();} });
+}
+
+function unitStorageKey(unit){ return unit + '-current'; }
+
+function renderUnitPicker(){
+  const grid = document.getElementById('unitGrid');
+  grid.innerHTML = Object.entries(UNIT_CONFIG).map(([key,cfg])=>`
+    <button type="button" class="unit-card" data-unit="${key}">
+      <span class="unit-icon">${cfg.icon}</span>
+      <span class="unit-name">${cfg.label}</span>
+    </button>
+  `).join('');
+  grid.querySelectorAll('.unit-card').forEach(btn=>{
+    btn.onclick = async ()=>{
+      grid.querySelectorAll('.unit-card').forEach(b=>b.disabled = true);
+      document.getElementById('saveText').textContent = 'Cargando datos de ' + UNIT_CONFIG[btn.dataset.unit].label + '…';
+      await loadStateForUnit(btn.dataset.unit);
+      current = 0;
+      renderAll();
+    };
+  });
+}
+
+function updateUnitBadge(){
+  const badge = document.getElementById('unitBadge');
+  if(!state.unidad){
+    badge.style.display = 'none';
+    return;
+  }
+  const cfg = getUnitConfig();
+  badge.style.display = 'block';
+  badge.innerHTML = `${cfg.icon} ${cfg.label} · <button type="button" class="link-btn" id="changeUnitBtn">Cambiar</button>`;
+  document.getElementById('changeUnitBtn').onclick = async ()=>{
+    if(confirm('¿Cambiar de unidad? Lo que cargaste en ' + cfg.label + ' queda guardado tal cual — solo volvés a elegir unidad.')){
+      clearTimeout(saveTimer);
+      await saveNow();
+      state.unidad = '';
+      current = 0;
+      renderAll();
+    }
+  };
+}
+
+function renderAll(){
+  const picker = document.getElementById('unitPicker');
+  const trailEl = document.getElementById('trail');
+  const panelsEl = document.getElementById('panels');
+
+  updateUnitBadge();
+
+  if(!state.unidad){
+    picker.style.display = 'block';
+    trailEl.style.display = 'none';
+    panelsEl.style.display = 'none';
+    renderUnitPicker();
+    return;
+  }
+
+  picker.style.display = 'none';
+  trailEl.style.display = '';
+  panelsEl.style.display = '';
+  refreshSections();
+  renderTrail();
+  renderPanels();
+}
+
+async function saveNow(){
+  if(!hasStorage || !state.unidad) return;
+  const dot = document.getElementById('saveDot');
+  const txt = document.getElementById('saveText');
+  dot.classList.add('saving');
+  txt.textContent = 'Guardando…';
+  try{
+    await fetch(API_URL + '?key=' + encodeURIComponent(unitStorageKey(state.unidad)), {
+      method:'POST',
+      // text/plain evita el preflight CORS; Apps Script igual lee el JSON del body
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body: JSON.stringify(state)
+    });
+    dot.classList.remove('saving');
+    txt.textContent = 'Guardado — visible para todo el equipo de ' + getUnitConfig().label;
+  }catch(e){
+    dot.classList.remove('saving');
+    txt.textContent = 'No se pudo guardar (revisá tu conexión) — reintento en breve';
+    console.error('save failed', e);
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(()=>scheduleSave(), 4000);
+  }
+}
+
+function scheduleSave(){
+  const txt = document.getElementById('saveText');
+  if(!hasStorage){
+    txt.textContent = 'Sin guardado automático — falta configurar API_URL';
+    return;
+  }
+  if(!state.unidad) return;
+  txt.textContent = 'Guardando…';
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(saveNow, 700);
+}
+
+async function loadStateForUnit(unit){
+  const txt = document.getElementById('saveText');
+  const warn = document.getElementById('storageWarning');
+  if(!hasStorage){
+    warn.classList.add('show');
+    state = emptyState();
+    state.unidad = unit;
+    txt.textContent = 'Sin guardado automático — falta configurar API_URL';
+    return;
+  }
+  warn.classList.remove('show');
+  try{
+    const res = await fetch(API_URL + '?key=' + encodeURIComponent(unitStorageKey(unit)), {method:'GET'});
+    const loaded = await res.json();
+    state = emptyState();
+    state.unidad = unit;
+    if(loaded && Object.keys(loaded).length){
+      state = {...state, ...loaded, unidad:unit, meta:{...emptyState().meta, ...(loaded.meta||{})}};
+    }
+    txt.textContent = 'Guardado — visible para todo el equipo de ' + getUnitConfig().label;
+  }catch(e){
+    console.error('load failed', e);
+    state = emptyState();
+    state.unidad = unit;
+    txt.textContent = 'Empezando de cero (todavía no hay datos guardados para esta unidad)';
+  }
+}
+
+document.getElementById('refreshBtn').addEventListener('click', async ()=>{
+  if(!state.unidad){ renderAll(); return; }
+  document.getElementById('saveText').textContent = 'Trayendo cambios…';
+  await loadStateForUnit(state.unidad);
+  renderAll();
+});
+
+/* ---------- Generación del .docx (OOXML armado a mano + JSZip) ---------- */
+
+function esc(s){
+  return String(s==null?'':s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;').replace(/'/g,'&apos;');
+}
+function pTitle(t){ return `<w:p><w:pPr><w:pStyle w:val="Title"/></w:pPr><w:r><w:t xml:space="preserve">${esc(t)}</w:t></w:r></w:p>`; }
+function pH1(t){ return `<w:p><w:pPr><w:pStyle w:val="Heading1"/></w:pPr><w:r><w:t xml:space="preserve">${esc(t)}</w:t></w:r></w:p>`; }
+function pH2(t){ return `<w:p><w:pPr><w:pStyle w:val="Heading2"/></w:pPr><w:r><w:t xml:space="preserve">${esc(t)}</w:t></w:r></w:p>`; }
+function pNormal(t){ return `<w:p><w:pPr><w:spacing w:after="160"/></w:pPr><w:r><w:t xml:space="preserve">${esc(t)}</w:t></w:r></w:p>`; }
+function pBullet(t){ return `<w:p><w:pPr><w:spacing w:after="80"/><w:ind w:left="360"/></w:pPr><w:r><w:t xml:space="preserve">• ${esc(t)}</w:t></w:r></w:p>`; }
+function pLabelVal(label, val){
+  return `<w:p><w:pPr><w:spacing w:after="120"/><w:ind w:left="360"/></w:pPr><w:r><w:rPr><w:b/></w:rPr><w:t xml:space="preserve">${esc(label)}: </w:t></w:r><w:r><w:t xml:space="preserve">${esc(val)}</w:t></w:r></w:p>`;
+}
+function tcell(text, header, width, shdColor){
+  const shd = header ? `<w:shd w:val="clear" w:fill="2F4B3C"/>` : (shdColor ? `<w:shd w:val="clear" w:fill="${shdColor}"/>` : '');
+  const rpr = header ? '<w:rPr><w:b/><w:color w:val="FFFFFF"/></w:rPr>' : '';
+  return `<w:tc><w:tcPr><w:tcW w:w="${width}" w:type="dxa"/>${shd}</w:tcPr><w:p><w:r>${rpr}<w:t xml:space="preserve">${esc(text)}</w:t></w:r></w:p></w:tc>`;
+}
+
+function buildMonthTableXml(year, month){
+  const colW = Math.floor(9000/7);
+  let xml = `<w:tbl><w:tblPr><w:tblW w:w="9000" w:type="dxa"/><w:tblBorders>` +
+    ['top','left','bottom','right','insideH','insideV'].map(b=>`<w:${b} w:val="single" w:sz="4" w:space="0" w:color="C9B896"/>`).join('') +
+    `</w:tblBorders></w:tblPr><w:tblGrid>` + Array(7).fill(`<w:gridCol w:w="${colW}"/>`).join('') + `</w:tblGrid>`;
+
+  xml += '<w:tr>' + ['L','M','M','J','V','S','D'].map(d=>tcell(d, true, colW)).join('') + '</w:tr>';
+
+  buildMonthMatrix(year, month).forEach(week=>{
+    xml += '<w:tr>';
+    week.forEach(dayNum=>{
+      if(!dayNum){
+        xml += `<w:tc><w:tcPr><w:tcW w:w="${colW}" w:type="dxa"/><w:shd w:val="clear" w:fill="F2EFE6"/></w:tcPr><w:p/></w:tc>`;
+        return;
+      }
+      const iso = isoDate(year, month, dayNum);
+      let cellXml = `<w:p><w:pPr><w:spacing w:after="40"/></w:pPr><w:r><w:rPr><w:b/><w:sz w:val="18"/></w:rPr><w:t xml:space="preserve">${dayNum}</w:t></w:r></w:p>`;
+      state.cronograma.filter(it=>it.fecha===iso).forEach(it=>{
+        const cat = CRONO_CATEGORIES.find(c=>c.key===it.categoria) || CRONO_CATEGORIES[1];
+        const colorHex = cat.color.replace('#','');
+        cellXml += `<w:p><w:pPr><w:spacing w:after="20"/></w:pPr>` +
+          `<w:r><w:rPr><w:color w:val="${colorHex}"/><w:sz w:val="15"/></w:rPr><w:t xml:space="preserve">■ </w:t></w:r>` +
+          `<w:r><w:rPr><w:sz w:val="15"/></w:rPr><w:t xml:space="preserve">${esc(it.actividad)}</w:t></w:r></w:p>`;
+      });
+      xml += `<w:tc><w:tcPr><w:tcW w:w="${colW}" w:type="dxa"/></w:tcPr>${cellXml}</w:tc>`;
+    });
+    xml += '</w:tr>';
+  });
+
+  xml += '</w:tbl><w:p/>';
+  return xml;
+}
+
+function buildCronogramaXml(){
+  let out = '';
+  out += `<w:p><w:pPr><w:spacing w:after="200"/></w:pPr>` +
+    CRONO_CATEGORIES.map(c=>
+      `<w:r><w:rPr><w:color w:val="${c.color.replace('#','')}"/></w:rPr><w:t xml:space="preserve">■ </w:t></w:r>` +
+      `<w:r><w:rPr><w:sz w:val="18"/></w:rPr><w:t xml:space="preserve">${esc(c.label)}    </w:t></w:r>`
+    ).join('') +
+    `</w:p>`;
+
+  const months = getMonthsToShow();
+  if(months.length===0){
+    return out + pNormal('—');
+  }
+  months.forEach(({year,month})=>{
+    out += pH2(`${MONTH_NAMES[month]} ${year}`);
+    out += buildMonthTableXml(year, month);
+  });
+
+  const invalid = state.cronograma.filter(it=>!isValidIsoDate(it.fecha));
+  if(invalid.length){
+    out += pH2('Otras actividades (sin fecha asignada)');
+    invalid.forEach(it=> out += pBullet(it.actividad));
+  }
+  return out;
+}
+
+function buildDocumentBody(){
+  const m = state.meta;
+  let b = '';
+  b += pTitle(m.numeroCiclo || '1° Ciclo de programa');
+  b += pNormal(`Nombre de la unidad ${(m.NombreUnidad||'').toUpperCase()}`);
+  b += pNormal(`${m.fechaInicio||'—'}  -  ${m.fechaFin||'—'}`);
+
+  b += pH1('Énfasis del grupo');
+  b += pNormal(m.enfasisGrupo || '—');
+
+  b += pH1('Objetivos de grupo');
+  if(state.objetivosGrupo.length) state.objetivosGrupo.forEach(o=> b += pBullet(o.texto));
+  else b += pNormal('—');
+
+  b += pH1('Diagnóstico');
+  (state.diagnostico || '—').split('\n').forEach(line=>{ if(line.trim()) b += pNormal(line); });
+
+  b += pH1('Educadores del ciclo');
+  if(state.educadores.length) state.educadores.forEach(e=> b += pBullet(`${e.nombre} — ${e.cargo}${e.nivel?' ('+e.nivel+')':''}`));
+  else b += pNormal('—');
+
+  b += pH1('Evaluación de objetivos del ciclo anterior');
+  if(state.evaluacionAnterior.length) state.evaluacionAnterior.forEach(e=>{
+    b += pLabelVal('Objetivo', e.objetivo);
+    b += pLabelVal('Evaluación', e.evaluacion);
+  }); else b += pNormal('—');
+
+  b += pH1('Propósito para este ciclo');
+  if(state.objetivosCiclo.length) state.objetivosCiclo.forEach(o=>{
+    b += pLabelVal('Objetivo', o.objetivo);
+    b += pLabelVal('Prioridades educativas', o.prioridades);
+  }); else b += pNormal('—');
+
+  b += pH1('Énfasis del ciclo');
+  b += pNormal(state.enfasisCiclo || '—');
+
+  const cfg = getUnitConfig();
+
+  if(!(cfg.hideSections||[]).includes('asambleas')){
+    b += pH1('Asambleas');
+    if(state.asambleas.length) state.asambleas.forEach(a=>{
+      b += pH2(`${a.titulo || 'Asamblea'}${a.fecha? ' — '+a.fecha:''}`);
+      b += pLabelVal('Participantes', a.participantes);
+      b += pLabelVal('Temas tratados', a.temas);
+      b += pLabelVal('Síntesis', a.sintesis);
+    }); else b += pNormal('—');
+  }
+
+  b += pH1(cfg.equiposLabel);
+  if(state.equipos.length) state.equipos.forEach(e=>{
+    b += pLabelVal(e.nombre || cfg.equiposItemLabel, `${cfg.coordinadorLabel}: ${e.coordinador||'—'}. Integrantes: ${e.integrantes||'—'}`);
+  }); else b += pNormal('—');
+
+  b += pH1('Cronograma');
+  b += buildCronogramaXml();
+
+  b += pH1('Sugerencias y observaciones');
+  b += pNormal(state.sugerencias || '—');
+
+  return b;
+}
+
+const STYLES_XML = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+<w:docDefaults><w:rPrDefault><w:rPr><w:rFonts w:ascii="Calibri" w:hAnsi="Calibri"/><w:sz w:val="22"/></w:rPr></w:rPrDefault></w:docDefaults>
+<w:style w:type="paragraph" w:default="1" w:styleId="Normal"><w:name w:val="Normal"/><w:qFormat/></w:style>
+<w:style w:type="paragraph" w:styleId="Title"><w:name w:val="Title"/><w:basedOn w:val="Normal"/><w:qFormat/>
+<w:pPr><w:spacing w:after="240"/></w:pPr><w:rPr><w:b/><w:sz w:val="40"/><w:color w:val="2F4B3C"/></w:rPr></w:style>
+<w:style w:type="paragraph" w:styleId="Heading1"><w:name w:val="heading 1"/><w:basedOn w:val="Normal"/><w:qFormat/>
+<w:pPr><w:spacing w:before="360" w:after="160"/></w:pPr><w:rPr><w:b/><w:sz w:val="30"/><w:color w:val="2F4B3C"/></w:rPr></w:style>
+<w:style w:type="paragraph" w:styleId="Heading2"><w:name w:val="heading 2"/><w:basedOn w:val="Normal"/><w:qFormat/>
+<w:pPr><w:spacing w:before="240" w:after="120"/></w:pPr><w:rPr><w:b/><w:sz w:val="24"/><w:color w:val="B5622D"/></w:rPr></w:style>
+</w:styles>`;
+
+const CONTENT_TYPES_XML = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
+<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
+<Default Extension="xml" ContentType="application/xml"/>
+<Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>
+<Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/>
+</Types>`;
+
+const RELS_XML = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>
+</Relationships>`;
+
+const DOC_RELS_XML = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>
+</Relationships>`;
+
+async function generateDocx(){
+  const btn = document.getElementById('exportBtn');
+  const old = btn.textContent;
+  btn.textContent = 'Generando…';
+  btn.disabled = true;
+  try{
+    const documentXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+<w:body>
+${buildDocumentBody()}
+<w:sectPr><w:pgSz w:w="12240" w:h="15840"/><w:pgMar w:top="1440" w:right="1440" w:bottom="1440" w:left="1440" w:header="720" w:footer="720" w:gutter="0"/></w:sectPr>
+</w:body>
+</w:document>`;
+
+    const zip = new JSZip();
+    zip.file('[Content_Types].xml', CONTENT_TYPES_XML);
+    zip.file('_rels/.rels', RELS_XML);
+    zip.file('word/document.xml', documentXml);
+    zip.file('word/styles.xml', STYLES_XML);
+    zip.file('word/_rels/document.xml.rels', DOC_RELS_XML);
+
+    const blob = await zip.generateAsync({
+      type:'blob',
+      mimeType:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const nombreCiclo = (state.meta.numeroCiclo || 'ciclo_de_programa').replace(/[^\w\s-]/g,'').trim().replace(/\s+/g,'_');
+    a.href = url;
+    a.download = `${nombreCiclo}.docx`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(()=>URL.revokeObjectURL(url), 2000);
+  }catch(e){
+    console.error('No se pudo generar el docx', e);
+    alert('Hubo un problema generando el Word. Revisá la consola para más detalle.');
+  }finally{
+    btn.textContent = old;
+    btn.disabled = false;
+  }
+}
+
+document.getElementById('exportBtn').addEventListener('click', generateDocx);
+
+document.getElementById('newCycleBtn').addEventListener('click', startNewCycle);
+
+async function startNewCycle(){
+  if(!state.unidad) return;
+  const ok = confirm(
+    '¿Ya descargaste el Word de este ciclo?\n\n' +
+    'Al empezar uno nuevo, este ciclo queda archivado en la hoja de Google (no se borra), ' +
+    'y el formulario de ' + getUnitConfig().label + ' se vacía para que carguen el próximo ciclo desde cero.\n\n' +
+    '¿Confirmás que querés archivar este ciclo y empezar uno nuevo?'
+  );
+  if(!ok) return;
+
+  const btn = document.getElementById('newCycleBtn');
+  const old = btn.textContent;
+  btn.textContent = 'Archivando…';
+  btn.disabled = true;
+
+  try{
+    const prevUnidad = state.unidad;
+    if(hasStorage){
+      const archiveKey = 'archivo-' + prevUnidad + '-' + (state.meta.numeroCiclo || 'ciclo').replace(/[^\w-]+/g,'_') + '-' + Date.now();
+      // Guarda el ciclo actual bajo una clave de archivo (no se pierde)
+      await fetch(API_URL + '?key=' + encodeURIComponent(archiveKey), {
+        method:'POST',
+        headers:{'Content-Type':'text/plain;charset=utf-8'},
+        body: JSON.stringify(state)
+      });
+    }
+    state = emptyState();
+    state.unidad = prevUnidad;
+    current = 0;
+    if(hasStorage){
+      await fetch(API_URL + '?key=' + encodeURIComponent(unitStorageKey(prevUnidad)), {
+        method:'POST',
+        headers:{'Content-Type':'text/plain;charset=utf-8'},
+        body: JSON.stringify(state)
+      });
+    }
+    renderAll();
+    document.getElementById('saveText').textContent = hasStorage
+      ? 'Ciclo archivado — empezando uno nuevo en ' + getUnitConfig().label
+      : 'Formulario vaciado (sin guardado automático configurado)';
+  }catch(e){
+    console.error('No se pudo archivar/reiniciar', e);
+    alert('Hubo un problema al archivar. No se vació el formulario, intentá de nuevo.');
+  }finally{
+    btn.textContent = old;
+    btn.disabled = false;
+  }
+}
+
+if(!hasStorage){
+  document.getElementById('storageWarning').classList.add('show');
+  document.getElementById('saveText').textContent = 'Sin guardado automático — falta configurar API_URL';
+} else {
+  document.getElementById('saveText').textContent = 'Elegí tu unidad para empezar';
+}
+renderAll();
+
+/* ---------- Carga y autocompletado desde un informe anterior (.docx) ---------- */
+
+function normalizeLine(s){
+  return s.trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/:$/,'').trim();
+}
+
+const LABEL_DEFS = [
+  {key:'enfasisGrupo', test:l=> l==='enfasis del grupo'},
+  {key:'objetivosGrupo', test:l=> l==='objetivos de grupo'},
+  {key:'diagnostico', test:l=> l==='diagnostico'},
+  {key:'educadores', test:l=> l.includes('educadores') && (l.includes('acompan') || l.includes('este ciclo'))},
+  {key:'evaluacionAnteriorSection', test:l=> l.startsWith('evaluacion de objetivos del ciclo anterior')},
+  {key:'objetivosCiclo', test:l=> l.startsWith('objetivos para este ciclo')},
+  {key:'enfasisCiclo', test:l=> l==='enfasis' || l==='enfasis del ciclo'},
+  {key:'asambleas', test:l=> l.startsWith('asamblea')},
+  {key:'cronograma', test:l=> l==='cronograma'},
+  {key:'sugerencias', test:l=> l.startsWith('sugerencias')},
+];
+
+function parseReportHtml(html){
+  const dom = new DOMParser().parseFromString(html, 'text/html');
+  const sections = {};
+  const ensure = k => sections[k] || (sections[k] = {text:[], items:[]});
+  let currentKey = null;
+
+  function walk(node){
+    Array.from(node.children).forEach(el=>{
+      const tag = el.tagName.toLowerCase();
+      if(tag === 'p' || /^h[1-6]$/.test(tag)){
+        let raw = el.textContent.replace(/\s+/g,' ').trim();
+        if(!raw) return;
+        const norm = normalizeLine(raw);
+        const matched = raw.length < 80 && LABEL_DEFS.find(d=>d.test(norm));
+        if(matched){ currentKey = matched.key; return; }
+        if(!currentKey) return;
+        // Detecta viñetas escritas a mano (-, •, ➢, *, ·, ➤, ▪) al empezar la línea
+        const bulletMatch = raw.match(/^[-•➢➤▪◦·*»]\s*(.+)$/);
+        if(bulletMatch){
+          ensure(currentKey).items.push(bulletMatch[1].trim());
+        } else {
+          ensure(currentKey).text.push(raw);
+        }
+      } else if(tag === 'ul' || tag === 'ol'){
+        if(currentKey){
+          Array.from(el.querySelectorAll('li')).forEach(li=>{
+            const t = li.textContent.replace(/\s+/g,' ').trim();
+            if(t) ensure(currentKey).items.push(t);
+          });
+        }
+      } else if(tag === 'blockquote'){
+        walk(el);
+      }
+    });
+  }
+  walk(dom.body);
+  return sections;
+}
+
+// Si una sección no trajo "items" (viñetas), pero sí párrafos sueltos,
+// los usa como respaldo: cada párrafo pasa a ser un ítem separado.
+function itemsOrFallback(section){
+  if(!section) return [];
+  if(section.items.length) return section.items;
+  return section.text.filter(t=>t.length>0);
+}
+
+function applyImportedSections(sections){
+  const filled = [];
+
+  if(!state.meta.enfasisGrupo && sections.enfasisGrupo && sections.enfasisGrupo.text.length){
+    state.meta.enfasisGrupo = sections.enfasisGrupo.text.join(' ');
+    filled.push('Énfasis del grupo');
+  }
+  const objetivosGrupoItems = itemsOrFallback(sections.objetivosGrupo);
+  if(state.objetivosGrupo.length===0 && objetivosGrupoItems.length){
+    state.objetivosGrupo = objetivosGrupoItems.map(t=>({texto:t}));
+    filled.push(`Objetivos de grupo (${objetivosGrupoItems.length})`);
+  }
+  if(!state.diagnostico && sections.diagnostico && sections.diagnostico.text.length){
+    state.diagnostico = sections.diagnostico.text.join('\n\n');
+    filled.push('Diagnóstico (como referencia — conviene actualizarlo)');
+  }
+  const educadoresItems = itemsOrFallback(sections.educadores);
+  if(state.educadores.length===0 && educadoresItems.length){
+    state.educadores = educadoresItems.map(t=>{
+      const parts = t.split(',');
+      return {nombre:(parts[0]||'').trim(), cargo:(parts.slice(1).join(',')||'').trim(), nivel:''};
+    });
+    filled.push(`Educadores (${educadoresItems.length})`);
+  }
+  const objetivosCicloItems = itemsOrFallback(sections.objetivosCiclo);
+  if(state.evaluacionAnterior.length===0 && objetivosCicloItems.length){
+    state.evaluacionAnterior = objetivosCicloItems.map(t=>({objetivo:t, evaluacion:''}));
+    filled.push(`Evaluación de objetivos del ciclo anterior (${objetivosCicloItems.length} objetivos, listos para evaluar)`);
+  }
+  return filled;
+}
+
+document.getElementById('reportFile').addEventListener('change', async (ev)=>{
+  const file = ev.target.files[0];
+  if(!file) return;
+  const status = document.getElementById('importStatus');
+  const summary = document.getElementById('importSummary');
+  const previewBtn = document.getElementById('togglePreviewBtn');
+  const preview = document.getElementById('reportPreview');
+  status.textContent = 'Leyendo el archivo…';
+  status.className = 'import-status';
+  summary.classList.remove('show');
+
+  try{
+    const arrayBuffer = await file.arrayBuffer();
+    const result = await mammoth.convertToHtml({arrayBuffer});
+    preview.innerHTML = result.value;
+
+    const sections = parseReportHtml(result.value);
+    const filled = applyImportedSections(sections);
+
+    renderAll();
+    scheduleSave();
+
+    status.textContent = '✅ Informe cargado';
+    status.className = 'import-status ok';
+    if(filled.length){
+      summary.innerHTML = '<b>Se completaron solos:</b><br>• ' + filled.join('<br>• ') +
+        '<br><br>Revisalos igual — es una detección automática y puede no ser perfecta.';
+    } else {
+      summary.innerHTML = 'No se pudo detectar automáticamente ninguna sección conocida (o esos campos ya estaban completos). Podés ver el informe completo abajo y copiar a mano lo que sirva.';
+    }
+    summary.classList.add('show');
+    previewBtn.style.display = 'inline-block';
+  }catch(e){
+    console.error('No se pudo leer el docx', e);
+    status.textContent = '❌ No se pudo leer el archivo (¿es un .docx válido?)';
+    status.className = 'import-status';
+  }
+});
+
+document.getElementById('togglePreviewBtn').addEventListener('click', ()=>{
+  const preview = document.getElementById('reportPreview');
+  const btn = document.getElementById('togglePreviewBtn');
+  const show = !preview.classList.contains('show');
+  preview.classList.toggle('show', show);
+  btn.textContent = show ? '🙈 Ocultar informe completo' : '👁 Ver el informe completo';
+});
+</script>
+</body>
+</html>
